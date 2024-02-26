@@ -32,16 +32,35 @@ const PADDLESENSITIVITY = 7;
 //===Variables de los ladrillos===
 const brickRowCount = 6; //Filas
 const brickColumnCount = 13; //columnas
-const brickWidth = 30;
-const bridHeight = 14;
-const brickPadding = 2;
+const brickWidth = 32;
+const brickHeight = 16;
+const brickPadding = 0;
 const brickOffsetTop = 80;
-const brickOffsetLeft = 30;
+const brickOffsetLeft = 16;
 const bricks = [];
+
+const BRICK_STATUS = {
+  ACTIVE: 1,
+  DESTROYED: 0,
+};
 
 //TERMINAR 1:04:00
 for (let c = 0; c < brickColumnCount; c++) {
   bricks[c] = []; //Inicializamos con un array vacio
+  for (let r = 0; r < brickRowCount; r++) {
+    const brickX = c * (brickWidth + brickPadding) + brickOffsetLeft;
+    const brickY = r * (brickHeight + brickPadding) + brickOffsetTop;
+
+    //Asignar un color aleatorio a cada ladrillo
+    const random = Math.floor(Math.random() * 8);
+    //Guardamos la informacion de cada ladrillo
+    bricks[c][r] = {
+      x: brickX,
+      y: brickY,
+      status: BRICK_STATUS.ACTIVE,
+      color: random,
+    };
+  }
 }
 
 //Funsiones de juego
@@ -78,9 +97,54 @@ function drawPaddle() {
     paddleHeight //Alto del dibujo
   );
 }
-function drawBricks() {}
+function drawBricks() {
+  for (let c = 0; c < brickColumnCount; c++) {
+    for (let r = 0; r < brickRowCount; r++) {
+      const currentBrick = bricks[c][r];
+      if (currentBrick.status === BRICK_STATUS.DESTROYED) continue;
 
-function collisionDetection() {}
+      // ctx.fillStyle = "yellow";
+      // ctx.rect(currentBrick.x, currentBrick.y, brickWidth, brickHeight);
+      // ctx.strokeStyle = "#000";
+      // ctx.stroke();
+      // ctx.fill();
+
+      const clipX = currentBrick.color * 32;
+
+      ctx.drawImage(
+        $bricks,
+        clipX,
+        0,
+        brickWidth,
+        brickHeight,
+        currentBrick.x,
+        currentBrick.y,
+        brickWidth,
+        brickHeight
+      );
+    }
+  }
+}
+
+function collisionDetection() {
+  for (let c = 0; c < brickColumnCount; c++) {
+    for (let r = 0; r < brickRowCount; r++) {
+      const currentBrick = bricks[c][r];
+      if (currentBrick.status === BRICK_STATUS.DESTROYED) continue;
+
+      const isBallSmaeXAsBrick =
+        x > currentBrick.x && x < currentBrick.x + brickWidth;
+
+      const isBallSmaeYAsBrick =
+        y > currentBrick.y && y < currentBrick.y + brickHeight;
+
+      if (isBallSmaeXAsBrick && isBallSmaeYAsBrick) {
+        dy = -dy;
+        currentBrick.status = BRICK_STATUS.DESTROYED;
+      }
+    }
+  }
+}
 
 function ballMovement() {
   //===Colisiones con paredes===
